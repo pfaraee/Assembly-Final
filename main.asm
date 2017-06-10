@@ -8,13 +8,14 @@ WriteDec proto
 Crlf proto
 writeLine proto
 getDoor proto
+getDescription proto
 gameOver proto
 getYesOrNo proto
 SetTextColor proto
 
 .data
 MAX = 20
-welcomeMSG BYTE "Welcome to the Room of Quite a Few Doors.", 0
+welcomeMSG BYTE "Welcome to the Room of Quite a Few Doors.\nasdasdasd", 0
 getDecisionMSG BYTE "Inspect room?", 0
 getDoorMSG BYTE "Go in West (w), North(n), or East(e) door?", 0
 crystalMSG BYTE "Number of Crystals: ", 0
@@ -28,7 +29,7 @@ main proc
 	;; text setup
 	mov eax, 11112222
 	call SetTextColor
-
+	
 	mov	edx, offset welcomeMSG			
 	call writeLine
 
@@ -44,6 +45,9 @@ main proc
 	mov eax, numCrystals
 	call WriteDec
 	call Crlf
+
+	;; descriptions go here
+	call getDescription
 
 	;; inspect room or no?
 	mov edx, offset getDecisionMSG

@@ -1,115 +1,157 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    06/03/17 06:52:52
-main.asm						     Page 1 - 1
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    06/09/17 23:37:10
+final_lib.asm						     Page 1 - 1
 
 
-				.386
-				.model flat,stdcall
-				.stack 4096
+				; File describing all methods I created for my final project
+				;
 
-				ExitProcess proto,dwExitCode:dword
+				.model flat, stdcall ; why does this need to be here?
 				WriteString proto
-				WriteDec proto
 				Crlf proto
-				writeLine proto
-				getDoor proto
-				gameOver proto
-				getYesOrNo proto
-				SetTextColor proto
+				ReadChar proto
+				ReadString proto
+				OpenInputFile proto
+				ReadFromFile proto
+				WriteChar proto
+				CloseFile proto
+				StrLength proto
+				WriteInt proto
+				RandomRange proto
+				Str_copy proto
+				Randomize proto
+				WriteWindowsMsg proto
+				ExitProcess proto,dwExitCode:dword
+
 
  00000000			.data
- = 00000014			MAX = 20
- 00000000 57 65 6C 63 6F	welcomeMSG BYTE "Welcome to the Room of Quite a Few Doors.", 0
-	   6D 65 20 74 6F
-	   20 74 68 65 20
-	   52 6F 6F 6D 20
-	   6F 66 20 51 75
-	   69 74 65 20 61
-	   20 46 65 77 20
-	   44 6F 6F 72 73
-	   2E 00
- 0000002A 49 6E 73 70 65	getDecisionMSG BYTE "Inspect room?", 0
-	   63 74 20 72 6F
-	   6F 6D 3F 00
- 00000038 47 6F 20 69 6E	getDoorMSG BYTE "Go in West (w), North(n), or East(e) door?", 0
-	   20 57 65 73 74
-	   20 28 77 29 2C
-	   20 4E 6F 72 74
-	   68 28 6E 29 2C
-	   20 6F 72 20 45
-	   61 73 74 28 65
-	   29 20 64 6F 6F
-	   72 3F 00
- 00000063 4E 75 6D 62 65	crystalMSG BYTE "Number of Crystals: ", 0
-	   72 20 6F 66 20
-	   43 72 79 73 74
-	   61 6C 73 3A 20
-	   00
- 00000078  00000015 [		userInput BYTE MAX+1 DUP (?)
+ 00000000 47 61 6D 65 4F	gameoverMSG BYTE "GameOver.", 0
+	   76 65 72 2E 00
+ 0000000A 43 3A 5C 49 72	descriptionFile BYTE "C:\Irvine\Irvine\Final_Project\Text.txt", 0
+	   76 69 6E 65 5C
+	   49 72 76 69 6E
+	   65 5C 46 69 6E
+	   61 6C 5F 50 72
+	   6F 6A 65 63 74
+	   5C 54 65 78 74
+	   2E 74 78 74 00
+ 00000032 00000000		filehandle DWORD ?
+ = 00001388			BUFSIZE = 5000
+ 00000036  00001388 [		buffer BYTE BUFSIZE DUP(?)
 	    00
 	   ]
- 0000008D 00			inByte BYTE ?
- 0000008E 00			roomDebug BYTE 0
- 0000008F 00000000		numCrystals DWORD 0
+ 000013BE  00001389 [		descriptionString BYTE BUFSIZE + 1 DUP(?)
+	    00
+	   ]
+ 00002747 00000000		bytesRead DWORD ?
+
 
  00000000			.code
- 00000000			main proc
-					;; text setup
- 00000000  B8 00A98F1E			mov eax, 11112222
- 00000005  E8 00000000 E		call SetTextColor
+				; method to write string to line
+				; put string offset in edx 
+ 00000000			writeLine proc
+ 00000000  E8 00000000 E		call WriteString
+ 00000005  E8 00000000 E		call Crlf
 
- 0000000A  BA 00000000 R		mov	edx, offset welcomeMSG			
- 0000000F  E8 00000000 E		call writeLine
+ 0000000A  C3				ret
+ 0000000B			writeLine endp
 
- 00000014				gameLoop:
-					; just to make sure you are moving through the rooms
- 00000014  A0 0000008E R		mov al, roomDebug
- 00000019  B0 01			mov al, 1
- 0000001B  A2 0000008E R		mov roomDebug, al
+				; method to get valid user input onw which door to choose
+				; puts input char in al
+				; game over if input is invalid
+ 0000000B			getDoor proc
+ 0000000B  E8 00000000 E		call ReadChar
 
-					;; output number of crystals
- 00000020  BA 00000063 R		mov edx, offset crystalMSG
- 00000025  E8 00000000 E		call WriteString
- 0000002A  A1 0000008F R		mov eax, numCrystals
- 0000002F  E8 00000000 E		call WriteDec
- 00000034  E8 00000000 E		call Crlf
+ 00000010  3C 77			cmp al, 'w'
+ 00000012  74 0D			jz validDoor
 
-					;; inspect room or no?
- 00000039  BA 0000002A R		mov edx, offset getDecisionMSG
- 0000003E  E8 00000000 E		call writeLine
+ 00000014  3C 6E			cmp al, 'n'
+ 00000016  74 09			jz validDoor
 
- 00000043  E8 00000000 E		call getYesOrNo ;; answer in al
+ 00000018  3C 65			cmp al, 'e'
+ 0000001A  74 05			jz validDoor
 
- 00000048  3C 6E			cmp al, 'n' ; if no skip to door picking
- 0000004A  74 00			jz doorPicking
+ 0000001C  E8 00000014			call gameOver
 
-					; This section for inspecting the room
-					;
-					;
-					;
-					;
-					;
+ 00000021  C3				validDoor: ret
+ 00000022			getDoor endp
 
- 0000004C				doorPicking:
-					;;get dialogue
- 0000004C  BA 00000038 R		mov edx, offset getDoorMSG
- 00000051  E8 00000000 E		call writeLine
+ 00000022			getYesOrNo proc
+ 00000022  E8 00000000 E		call ReadChar
+
+ 00000027  3C 79			cmp al, 'y'
+ 00000029  74 09			jz good
 					
-					;; get input
- 00000056  E8 00000000 E		call getDoor
+ 0000002B  3C 6E			cmp al, 'n'
+ 0000002D  74 05			jz good
 
-					;; do calculations
+ 0000002F  E8 00000001			call gameOver
+
+ 00000034  C3				good: ret
+ 00000035			getYesOrNo endp
+
+				; function that ends the game
+ 00000035			gameOver proc
+ 00000035  BA 00000000 R		mov edx, offset gameoverMSG
+ 0000003A  E8 FFFFFFC1			call writeLine
+
+					invoke ExitProcess,0
+ 0000003F  6A 00	   *	    push   +000000000h
+ 00000041  E8 00000000 E   *	    call   ExitProcess
+ 00000046			gameOver endp
+
+ 00000046			getDescription proc
+ 00000046  BA 0000000A R		mov edx, offset descriptionFile
+ 0000004B  E8 00000000 E		call OpenInputFile
+ 00000050  A3 00000032 R		mov filehandle, eax
+ 00000055  BA 00000036 R		mov edx, offset buffer
+ 0000005A  B9 00001388			mov ecx, BUFSIZE
+ 0000005F  E8 00000000 E		call ReadFromFile
+ 00000064  72 2C			jc show_error_message
+
+ 00000066  A3 00002747 R		mov bytesRead, eax
+
+ 0000006B  B8 00000003			mov eax, 3
+ 00000070  E8 00000000 E		call Randomize
+ 00000075  E8 00000000 E		call RandomRange
+ 0000007A  40				inc eax ; incs so its beween 1 and n now
+ 0000007B  8B D8			mov ebx, eax ; moves it because we use ebx in getStringFromBuffer
+
+ 0000007D  E8 00000015			call getStringFromBuffer
+ 00000082  E8 FFFFFF79			call writeLine
 
 					
- 0000005B  A1 0000008F R		mov eax, numCrystals
- 00000060  83 F8 0A			cmp eax, 10
- 00000063  72 AF			jb gameLoop
-					; just incase
- 00000065  E8 00000000 E		call gameOver
- 0000006A			main endp
-				end main
 
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    06/03/17 06:52:52
-main.asm						     Symbols 2 - 1
+ 00000087  A1 00000032 R		mov eax, filehandle
+ 0000008C  E8 00000000 E		call CloseFile
+
+ 00000091  C3				ret
+
+ 00000092				show_error_message:
+ 00000092  E8 00000000 E		call WriteWindowsMsg
+ 00000097			getDescription endp
+
+				;; GETS NTH LINE STORED IN EBX, POINTS ESI TO THE ADRESS OF THE LINE
+				;; STORES ADDRES INTO EDX
+				;; uses ebx for the index starting at 1
+ 00000097			getStringFromBuffer proc
+ 00000097  BE 00000036 R		mov esi, offset buffer ; MAYBE JUST GET RID OF THIS SOON
+ 0000009C  8B CB			mov ecx, ebx ; counter
+
+ 0000009E			L1:	
+ 0000009E  8B D6			mov edx, esi
+ 000000A0  E8 00000000 E		call StrLength ;stored in eax
+ 000000A5  03 F0			add esi, eax ; adds length
+ 000000A7  46				inc esi ; ADDS ONE TO SKILL THE NULLCHAR
+					; NOW ESI POINTS TO THE STRING I WANT
+ 000000A8  E2 F4			loop L1
+
+ 000000AA  8B D6			mov edx, esi
+
+ 000000AC  C3				ret
+ 000000AD			getStringFromBuffer endp
+				end
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    06/09/17 23:37:10
+final_lib.asm						     Symbols 2 - 1
 
 
 
@@ -119,27 +161,39 @@ Segments and Groups:
                 N a m e                 Size     Length   Align   Combine Class
 
 FLAT . . . . . . . . . . . . . .	GROUP
-STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000093 DWord	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 0000006A DWord	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000274B Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000AD Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
+CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFromFile . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-gameOver . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-getDoor  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-getYesOrNo . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000006A Public STDCALL
-  gameLoop . . . . . . . . . . .	L Near	 00000014 _TEXT	
-  doorPicking  . . . . . . . . .	L Near	 0000004C _TEXT	
-writeLine  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+gameOver . . . . . . . . . . . .	P Near	 00000035 _TEXT	Length= 00000011 Public STDCALL
+getDescription . . . . . . . . .	P Near	 00000046 _TEXT	Length= 00000051 Public STDCALL
+  show_error_message . . . . . .	L Near	 00000092 _TEXT	
+getDoor  . . . . . . . . . . . .	P Near	 0000000B _TEXT	Length= 00000017 Public STDCALL
+  validDoor  . . . . . . . . . .	L Near	 00000021 _TEXT	
+getStringFromBuffer  . . . . . .	P Near	 00000097 _TEXT	Length= 00000016 Public STDCALL
+  L1 . . . . . . . . . . . . . .	L Near	 0000009E _TEXT	
+getYesOrNo . . . . . . . . . . .	P Near	 00000022 _TEXT	Length= 00000013 Public STDCALL
+  good . . . . . . . . . . . . .	L Near	 00000034 _TEXT	
+writeLine  . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000B Public STDCALL
 
 
 Symbols:
@@ -155,15 +209,13 @@ Symbols:
 @fardata?  . . . . . . . . . . .	Text   	 FLAT
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
-MAX  . . . . . . . . . . . . . .	Number	 00000014h   
-crystalMSG . . . . . . . . . . .	Byte	 00000063 _DATA	
-getDecisionMSG . . . . . . . . .	Byte	 0000002A _DATA	
-getDoorMSG . . . . . . . . . . .	Byte	 00000038 _DATA	
-inByte . . . . . . . . . . . . .	Byte	 0000008D _DATA	
-numCrystals  . . . . . . . . . .	DWord	 0000008F _DATA	
-roomDebug  . . . . . . . . . . .	Byte	 0000008E _DATA	
-userInput  . . . . . . . . . . .	Byte	 00000078 _DATA	
-welcomeMSG . . . . . . . . . . .	Byte	 00000000 _DATA	
+BUFSIZE  . . . . . . . . . . . .	Number	 00001388h   
+buffer . . . . . . . . . . . . .	Byte	 00000036 _DATA	
+bytesRead  . . . . . . . . . . .	DWord	 00002747 _DATA	
+descriptionFile  . . . . . . . .	Byte	 0000000A _DATA	
+descriptionString  . . . . . . .	Byte	 000013BE _DATA	
+filehandle . . . . . . . . . . .	DWord	 00000032 _DATA	
+gameoverMSG  . . . . . . . . . .	Byte	 00000000 _DATA	
 
 	   0 Warnings
 	   0 Errors
